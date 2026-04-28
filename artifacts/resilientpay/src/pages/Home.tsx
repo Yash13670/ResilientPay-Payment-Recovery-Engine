@@ -12,7 +12,7 @@ import { motion, AnimatePresence } from "framer-motion";
 
 export default function Home() {
   const pipeline = usePipeline();
-  const { status, currentStepIndex, result, history, activeId, loadToken, run, loadHistory, clearHistory } = pipeline;
+  const { status, currentStepIndex, result, history, activeId, loadToken, aiStatus, aiSummary, run, loadHistory, clearHistory } = pipeline;
   const { enabled: autoDemoEnabled, setEnabled: setAutoDemoEnabled, pausedFor, userInteracted } = useAutoDemo(pipeline);
   
   const dashboardRef = useRef<HTMLDivElement | null>(null);
@@ -57,7 +57,7 @@ export default function Home() {
           </div>
 
           <div className="lg:col-span-7">
-            <Pipeline currentStepIndex={currentStepIndex} status={status} result={result} />
+            <Pipeline currentStepIndex={currentStepIndex} status={status} result={result} aiStatus={aiStatus} aiSummary={aiSummary} />
           </div>
         </div>
 

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { PIPELINE_STEPS, PipelineResult } from "@/lib/mockScenarios";
 import { motion, AnimatePresence } from "framer-motion";
-import { Activity, AlertTriangle, Route, Clock, Server, PlayCircle, FileText, CheckCircle2, Circle, ChevronRight, ChevronDown, ChevronUp } from "lucide-react";
+import { Activity, AlertTriangle, Route, Clock, Server, PlayCircle, FileText, CheckCircle2, Circle, ChevronRight, ChevronDown, ChevronUp, Sparkles, Loader2 } from "lucide-react";
 
 const icons = {
   detect: Activity,
@@ -17,9 +17,11 @@ interface PipelineProps {
   currentStepIndex: number;
   status: "idle" | "processing" | "completed";
   result: PipelineResult | null;
+  aiStatus?: "idle" | "thinking" | "ready" | "fallback";
+  aiSummary?: string | null;
 }
 
-export function Pipeline({ currentStepIndex, status, result }: PipelineProps) {
+export function Pipeline({ currentStepIndex, status, result, aiStatus = "idle", aiSummary = null }: PipelineProps) {
   const [expandedSteps, setExpandedSteps] = useState<Record<string, boolean>>({});
 
   const toggleStep = (stepId: string) => {
@@ -41,14 +43,45 @@ export function Pipeline({ currentStepIndex, status, result }: PipelineProps) {
       animate={{ opacity: 1, x: 0 }}
       className="rounded-xl border border-white/10 bg-card/40 p-6 backdrop-blur-md shadow-2xl relative"
     >
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-lg font-semibold text-white">Pipeline Execution</h2>
+      <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+        <div className="flex items-center gap-3">
+          <h2 className="text-lg font-semibold text-white">Pipeline Execution</h2>
+          {aiStatus === "thinking" && (
+            <span className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider px-2 py-1 rounded-full bg-gradient-to-r from-blue-500/20 to-purple-500/20 border border-purple-400/30 text-purple-200">
+              <Loader2 className="h-3 w-3 animate-spin" />
+              Gemini reasoning
+            </span>
+          )}
+          {aiStatus === "ready" && (
+            <span className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider px-2 py-1 rounded-full bg-gradient-to-r from-blue-500/20 to-purple-500/20 border border-purple-400/30 text-purple-200">
+              <Sparkles className="h-3 w-3" />
+              AI reasoning live
+            </span>
+          )}
+          {aiStatus === "fallback" && (
+            <span className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider px-2 py-1 rounded-full bg-amber-500/10 border border-amber-400/20 text-amber-200">
+              <Sparkles className="h-3 w-3" />
+              Cached reasoning
+            </span>
+          )}
+        </div>
         <div className="flex gap-2">
           <button onClick={expandAll} className="text-xs text-muted-foreground hover:text-white transition-colors">Expand all</button>
           <span className="text-muted-foreground/50">|</span>
           <button onClick={collapseAll} className="text-xs text-muted-foreground hover:text-white transition-colors">Collapse all</button>
         </div>
       </div>
+
+      {aiSummary && aiStatus === "ready" && (
+        <motion.div
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-5 px-3 py-2 rounded-lg border border-purple-400/20 bg-gradient-to-r from-blue-500/5 to-purple-500/5 text-xs text-purple-100/90 flex items-start gap-2"
+        >
+          <Sparkles className="h-3.5 w-3.5 text-purple-300 mt-0.5 shrink-0" />
+          <span><span className="font-semibold text-purple-200">Agent verdict:</span> {aiSummary}</span>
+        </motion.div>
+      )}
       
       <div className="relative flex flex-col gap-6">
         <div className="absolute left-6 top-6 bottom-6 w-px bg-white/10" />
