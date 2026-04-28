@@ -1,0 +1,88 @@
+Build a modern, professional web UI for an AI-powered "Autonomous Payment Recovery System" called ResilientPay.
+
+Tech Stack:
+- React (with Vite)
+- Tailwind CSS
+- TypeScript
+- Framer Motion for animations
+
+Design Requirements:
+- Dark theme (blue + purple gradient, fintech style)
+- Clean, modern dashboard UI (similar to Stripe / fintech apps)
+- Fully responsive (desktop + mobile)
+- Smooth animations and transitions
+
+Main Features:
+
+1. HEADER
+- Title: "ResilientPay"
+- Subtitle: "Autonomous Payment Recovery Engine"
+- Status indicator (Active / Processing / Idle)
+
+2. LEFT PANEL (INPUT SECTION)
+- Title: "Payment Failure Input"
+- Textarea where user can paste:
+  - Payment logs
+  - Error messages
+  - Incident descriptions
+- Placeholder example:
+  "Transaction failed: $200,000 due to gateway timeout. SLA 24 hours. Immediate recovery required."
+- Button: "Run Recovery Pipeline"
+
+3. RIGHT PANEL (PIPELINE VISUALIZATION)
+Show 7-step AI pipeline vertically with icons:
+
+- Failure Detection
+- Severity Analysis
+- Route Selection
+- SLA Monitoring
+- Load Analysis
+- Auto Recovery Execution
+- Audit Logging
+
+Each step should:
+- Highlight when active
+- Show status (Pending / Processing / Completed)
+
+4. OUTPUT DASHBOARD (BOTTOM SECTION)
+
+Display results in cards:
+
+A. Recovery Status Card
+- Status: SUCCESS / FAILED / RETRYING
+- Amount recovered
+- Route used (Bank / Gateway / Stablecoin)
+
+B. Alerts Panel
+- SLA breach warnings
+- Critical alerts
+
+C. Audit Log Panel
+- Timeline view of actions taken by each agent
+
+D. Impact Metrics
+- Time saved
+- Manual effort reduced
+- SLA breaches avoided
+
+5. EXTRA FEATURES
+- Loading animation when pipeline runs
+- Fake/mock API response (simulate backend)
+- Smooth transitions between steps
+- Highlight "critical" cases in red
+
+6. OPTIONAL (ADVANCED)
+- Add a "Blockchain Proof" section showing:
+  - Transaction hash
+  - Status confirmed
+
+Code Requirements:
+- Clean component structure
+- Reusable components
+- Use mock JSON data for simulation
+- No backend required (frontend only)
+
+Goal:
+The UI should clearly demonstrate how an AI system automatically detects, analyzes, and recovers failed payments in real-time.
+
+Make it visually impressive for a hackathon demo.
