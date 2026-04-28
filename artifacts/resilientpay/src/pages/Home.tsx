@@ -1,3 +1,4 @@
+import { useRef } from "react";
 import { usePipeline } from "@/hooks/usePipeline";
 import { Header } from "@/components/Header";
 import { InputPanel } from "@/components/InputPanel";
@@ -7,7 +8,15 @@ import { SessionHistory } from "@/components/SessionHistory";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function Home() {
-  const { status, currentStepIndex, result, history, run, loadHistory } = usePipeline();
+  const { status, currentStepIndex, result, history, activeId, loadToken, run, loadHistory, clearHistory } = usePipeline();
+  const dashboardRef = useRef<HTMLDivElement | null>(null);
+
+  const handleLoadHistory = (item: Parameters<typeof loadHistory>[0]) => {
+    loadHistory(item);
+    requestAnimationFrame(() => {
+      dashboardRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  };
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden flex flex-col text-foreground font-sans">
@@ -22,39 +31,46 @@ export default function Home() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-8">
           <div className="lg:col-span-5 flex flex-col gap-8">
             <InputPanel onRun={run} isProcessing={status === "processing"} />
-            
+
             {/* Visual spacer on desktop to balance layout */}
             <div className="hidden lg:block flex-1 rounded-xl border border-white/5 bg-card/10 p-6 backdrop-blur-sm relative overflow-hidden">
               <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:20px_20px]" />
               <div className="relative h-full flex items-center justify-center text-center px-8">
                 <p className="text-sm text-muted-foreground/50">
-                  Awaiting failure telemetry.<br/>System armed and listening.
+                  Awaiting failure telemetry.<br />System armed and listening.
                 </p>
               </div>
             </div>
           </div>
-          
+
           <div className="lg:col-span-7">
             <Pipeline currentStepIndex={currentStepIndex} status={status} />
           </div>
         </div>
 
-        <AnimatePresence mode="wait">
-          {result && status === "completed" && (
-            <motion.div
-              key={result.id}
-              initial={{ opacity: 0, y: 40 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -40 }}
-              transition={{ duration: 0.5, type: "spring", bounce: 0.4 }}
-              className="mt-8 pt-8 border-t border-white/10"
-            >
-              <OutputDashboard result={result} />
-            </motion.div>
-          )}
-        </AnimatePresence>
+        <div ref={dashboardRef} className="scroll-mt-24">
+          <AnimatePresence mode="wait">
+            {result && status === "completed" && (
+              <motion.div
+                key={`${result.id}-${loadToken}`}
+                initial={{ opacity: 0, y: 40 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -40 }}
+                transition={{ duration: 0.5, type: "spring", bounce: 0.4 }}
+                className="mt-8 pt-8 border-t border-white/10"
+              >
+                <OutputDashboard result={result} />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
 
-        <SessionHistory history={history} onLoad={loadHistory} />
+        <SessionHistory
+          history={history}
+          activeId={activeId}
+          onLoad={handleLoadHistory}
+          onClear={clearHistory}
+        />
       </main>
     </div>
   );

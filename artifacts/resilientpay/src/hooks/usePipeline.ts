@@ -9,9 +9,12 @@ export interface PipelineState {
   currentStepIndex: number;
   result: PipelineResult | null;
   history: PipelineResult[];
+  activeId: string | null;
+  loadToken: number;
   run: (input: string) => Promise<void>;
   reset: () => void;
   loadHistory: (result: PipelineResult) => void;
+  clearHistory: () => void;
 }
 
 export function usePipeline(): PipelineState {
@@ -19,6 +22,8 @@ export function usePipeline(): PipelineState {
   const [currentStepIndex, setCurrentStepIndex] = useState<number>(-1);
   const [result, setResult] = useState<PipelineResult | null>(null);
   const [history, setHistory] = useState<PipelineResult[]>([]);
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const [loadToken, setLoadToken] = useState<number>(0);
   const { toast } = useToast();
   const abortControllerRef = useRef<AbortController | null>(null);
 
@@ -37,14 +42,11 @@ export function usePipeline(): PipelineState {
     setStatus("processing");
     setCurrentStepIndex(0);
     setResult(null);
+    setActiveId(null);
 
-    // Simulate steps
     for (let i = 0; i < PIPELINE_STEPS.length; i++) {
       setCurrentStepIndex(i);
-      
-      // Variable delay between 600ms and 1100ms
       const delay = Math.floor(Math.random() * 500) + 600;
-      
       try {
         await new Promise<void>((resolve, reject) => {
           const timeout = setTimeout(resolve, delay);
@@ -53,25 +55,25 @@ export function usePipeline(): PipelineState {
             reject(new Error("Aborted"));
           });
         });
-      } catch (e) {
+      } catch {
         if (signal.aborted) return;
       }
     }
 
     if (signal.aborted) return;
 
-    const finalResult = {
+    const finalResult: PipelineResult = {
       ...getResultForInput(input),
-      id: Math.random().toString(36).substring(2, 9),
-      timestamp: new Date()
+      id: `${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 7)}`,
+      timestamp: new Date(),
     };
-    
+
     setResult(finalResult);
     setStatus("completed");
     setCurrentStepIndex(-1);
-    
-    setHistory(prev => [finalResult, ...prev].slice(0, 5));
-    
+    setActiveId(finalResult.id);
+    setLoadToken((t) => t + 1);
+    setHistory((prev) => [finalResult, ...prev].slice(0, 6));
   }, [toast]);
 
   const reset = useCallback(() => {
@@ -81,6 +83,7 @@ export function usePipeline(): PipelineState {
     setStatus("idle");
     setCurrentStepIndex(-1);
     setResult(null);
+    setActiveId(null);
   }, []);
 
   const loadHistory = useCallback((pastResult: PipelineResult) => {
@@ -90,7 +93,19 @@ export function usePipeline(): PipelineState {
     setStatus("completed");
     setCurrentStepIndex(-1);
     setResult(pastResult);
+    setActiveId(pastResult.id);
+    setLoadToken((t) => t + 1);
+    toast({
+      title: "Run restored",
+      description: `${pastResult.scenarioName} • ${pastResult.status}`,
+      duration: 2000,
+    });
+  }, [toast]);
+
+  const clearHistory = useCallback(() => {
+    setHistory([]);
+    setActiveId(null);
   }, []);
 
-  return { status, currentStepIndex, result, history, run, reset, loadHistory };
+  return { status, currentStepIndex, result, history, activeId, loadToken, run, reset, loadHistory, clearHistory };
 }

@@ -1,5 +1,3 @@
-import { create } from "zustand";
-
 export interface Alert {
   id: string;
   severity: "Critical" | "Warning" | "Info";
