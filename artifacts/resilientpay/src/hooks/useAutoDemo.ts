@@ -45,7 +45,14 @@ export function useAutoDemo(pipeline: PipelineState) {
 
     const interval = setInterval(() => {
       if (pipelineRef.current.status === "idle" || pipelineRef.current.status === "completed") {
-        const scenario = PREBUILT_SCENARIOS[Math.floor(Math.random() * PREBUILT_SCENARIOS.length)];
+        const usedNames = new Set(
+          pipelineRef.current.history.map((h) => h.scenarioName)
+        );
+        const available = PREBUILT_SCENARIOS.filter(
+          (s) => !usedNames.has(s.result.scenarioName)
+        );
+        const pool = available.length > 0 ? available : PREBUILT_SCENARIOS;
+        const scenario = pool[Math.floor(Math.random() * pool.length)];
         pipelineRef.current.run(scenario.inputText);
       }
     }, 15000 + Math.random() * 5000); // 15-20s
