@@ -2,8 +2,10 @@ import { useState, useEffect } from "react";
 import { Activity, Radio, ShieldCheck } from "lucide-react";
 import { PipelineStatus } from "@/hooks/usePipeline";
 import { motion } from "framer-motion";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 
-export function Header({ status }: { status: PipelineStatus }) {
+export function Header({ status, autoDemoEnabled, setAutoDemoEnabled, pausedFor }: { status: PipelineStatus, autoDemoEnabled: boolean, setAutoDemoEnabled: (v: boolean) => void, pausedFor: number }) {
   const [time, setTime] = useState(new Date());
 
   useEffect(() => {
@@ -26,6 +28,20 @@ export function Header({ status }: { status: PipelineStatus }) {
         </div>
 
         <div className="flex items-center gap-6">
+          <div className="flex items-center gap-3 bg-white/5 border border-white/10 px-3 py-1.5 rounded-full relative">
+            {autoDemoEnabled && (
+              <div className="absolute -inset-0.5 rounded-full bg-gradient-to-r from-blue-500/50 to-purple-500/50 blur-sm -z-10 animate-pulse-slow opacity-50" />
+            )}
+            <Switch id="auto-demo" checked={autoDemoEnabled} onCheckedChange={setAutoDemoEnabled} className="data-[state=checked]:bg-primary" />
+            <Label htmlFor="auto-demo" className="text-xs font-medium uppercase tracking-wider cursor-pointer text-white flex items-center gap-2">
+              Auto-Demo
+              {autoDemoEnabled && pausedFor === 0 && <span className="relative flex h-2 w-2"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-75"></span><span className="relative inline-flex rounded-full h-2 w-2 bg-purple-500"></span></span>}
+            </Label>
+            {autoDemoEnabled && pausedFor > 0 && (
+              <span className="text-[10px] text-amber-400 font-mono absolute -bottom-4 right-2 whitespace-nowrap">Resuming in {pausedFor}s</span>
+            )}
+          </div>
+
           <div className="hidden items-center gap-2 text-xs font-mono text-muted-foreground sm:flex">
             <span>{time.toISOString().split("T")[1].split(".")[0]} UTC</span>
             <div className="relative flex h-2 w-2">

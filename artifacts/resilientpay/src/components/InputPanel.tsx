@@ -8,13 +8,25 @@ import { motion } from "framer-motion";
 interface InputPanelProps {
   onRun: (input: string) => void;
   isProcessing: boolean;
+  onInteract: () => void;
 }
 
-export function InputPanel({ onRun, isProcessing }: InputPanelProps) {
+export function InputPanel({ onRun, isProcessing, onInteract }: InputPanelProps) {
   const [input, setInput] = useState("");
 
   const handleRun = () => {
+    onInteract();
     onRun(input);
+  };
+
+  const handleChipClick = (text: string) => {
+    onInteract();
+    setInput(text);
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    onInteract();
+    setInput(e.target.value);
   };
 
   return (
@@ -39,7 +51,7 @@ export function InputPanel({ onRun, isProcessing }: InputPanelProps) {
         {PREBUILT_SCENARIOS.map((scenario) => (
           <button
             key={scenario.name}
-            onClick={() => setInput(scenario.inputText)}
+            onClick={() => handleChipClick(scenario.inputText)}
             disabled={isProcessing}
             className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-muted-foreground transition-all hover:bg-white/10 hover:text-white disabled:opacity-50"
           >
@@ -51,7 +63,7 @@ export function InputPanel({ onRun, isProcessing }: InputPanelProps) {
       <div className="relative">
         <Textarea
           value={input}
-          onChange={(e) => setInput(e.target.value)}
+          onChange={handleChange}
           placeholder="Transaction failed: $200,000 due to gateway timeout. SLA 24 hours. Immediate recovery required."
           className="min-h-[200px] resize-none border-white/10 bg-black/40 font-mono text-sm placeholder:text-muted-foreground/50 focus-visible:ring-primary/50"
           disabled={isProcessing}

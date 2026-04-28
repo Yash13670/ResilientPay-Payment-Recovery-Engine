@@ -1,21 +1,33 @@
 import { useRef } from "react";
 import { usePipeline } from "@/hooks/usePipeline";
+import { useAutoDemo } from "@/hooks/useAutoDemo";
 import { Header } from "@/components/Header";
+import { LiveFeed } from "@/components/LiveFeed";
 import { InputPanel } from "@/components/InputPanel";
 import { Pipeline } from "@/components/Pipeline";
 import { OutputDashboard } from "@/components/OutputDashboard";
+import { RecoveryAnalytics } from "@/components/RecoveryAnalytics";
 import { SessionHistory } from "@/components/SessionHistory";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function Home() {
-  const { status, currentStepIndex, result, history, activeId, loadToken, run, loadHistory, clearHistory } = usePipeline();
+  const pipeline = usePipeline();
+  const { status, currentStepIndex, result, history, activeId, loadToken, run, loadHistory, clearHistory } = pipeline;
+  const { enabled: autoDemoEnabled, setEnabled: setAutoDemoEnabled, pausedFor, userInteracted } = useAutoDemo(pipeline);
+  
   const dashboardRef = useRef<HTMLDivElement | null>(null);
 
   const handleLoadHistory = (item: Parameters<typeof loadHistory>[0]) => {
+    userInteracted();
     loadHistory(item);
     requestAnimationFrame(() => {
       dashboardRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
     });
+  };
+
+  const handleClearHistory = () => {
+    userInteracted();
+    clearHistory();
   };
 
   return (
@@ -25,12 +37,13 @@ export default function Home() {
       <div className="fixed -top-40 -left-40 h-[500px] w-[500px] rounded-full bg-blue-600/20 blur-[100px] pointer-events-none z-0 mix-blend-screen" />
       <div className="fixed top-40 -right-40 h-[600px] w-[600px] rounded-full bg-purple-600/10 blur-[120px] pointer-events-none z-0 mix-blend-screen" />
 
-      <Header status={status} />
+      <Header status={status} autoDemoEnabled={autoDemoEnabled} setAutoDemoEnabled={setAutoDemoEnabled} pausedFor={pausedFor} />
+      <LiveFeed />
 
       <main className="flex-1 container mx-auto px-4 py-8 relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-8">
           <div className="lg:col-span-5 flex flex-col gap-8">
-            <InputPanel onRun={run} isProcessing={status === "processing"} />
+            <InputPanel onRun={run} isProcessing={status === "processing"} onInteract={userInteracted} />
 
             {/* Visual spacer on desktop to balance layout */}
             <div className="hidden lg:block flex-1 rounded-xl border border-white/5 bg-card/10 p-6 backdrop-blur-sm relative overflow-hidden">
@@ -44,7 +57,7 @@ export default function Home() {
           </div>
 
           <div className="lg:col-span-7">
-            <Pipeline currentStepIndex={currentStepIndex} status={status} />
+            <Pipeline currentStepIndex={currentStepIndex} status={status} result={result} />
           </div>
         </div>
 
@@ -65,11 +78,13 @@ export default function Home() {
           </AnimatePresence>
         </div>
 
+        <RecoveryAnalytics history={history} />
+
         <SessionHistory
           history={history}
           activeId={activeId}
           onLoad={handleLoadHistory}
-          onClear={clearHistory}
+          onClear={handleClearHistory}
         />
       </main>
     </div>

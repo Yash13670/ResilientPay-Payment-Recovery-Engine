@@ -28,6 +28,7 @@ export interface PipelineResult {
   timeSaved: number;
   effortReduced: number;
   slaAvoided: number;
+  reasoning?: Record<string, string[]>;
 }
 
 export const PIPELINE_STEPS = [
@@ -76,6 +77,15 @@ export const PREBUILT_SCENARIOS: Scenario[] = [
       timeSaved: 45,
       effortReduced: 92,
       slaAvoided: 1,
+      reasoning: {
+        detect: ["Parsed gateway error code GW_TIMEOUT_504", "Matched signature: timeout-during-capture", "Confidence 96.4% — flagged as recoverable"],
+        analyze: ["Amount $200,000 > $100k threshold → severity HIGH", "SLA window 24h, elapsed 0h → recovery feasible", "Customer tier: Enterprise — escalation priority +1"],
+        route: ["Evaluated 4 fallback routes", "Backup Gateway B selected: 99.2% success on similar incidents", "Estimated route cost: $12.40 — within budget"],
+        sla: ["RTO target: 15 minutes", "Current burn: 0% of SLA window", "All compliance checks passed (PCI-DSS, SOC2)"],
+        load: ["Backup Gateway B liquidity: 87% available", "Network congestion: low (12ms p50)", "Concurrent recoveries: 4 — within capacity"],
+        execute: ["Idempotency key generated: rcv_8f2a...", "Transaction dispatched at 14:32:11.207 UTC", "Settlement confirmation received in 412ms"],
+        audit: ["State transitions written to immutable ledger", "Hash anchored to Ethereum block #18492041", "Notification dispatched to ops-payments@channel"]
+      }
     }
   },
   {
@@ -107,6 +117,15 @@ export const PREBUILT_SCENARIOS: Scenario[] = [
       timeSaved: 12,
       effortReduced: 85,
       slaAvoided: 0,
+      reasoning: {
+        detect: ["Parsed ISO 8583 error code 05", "Hard decline on primary BIN", "Confidence 98.1% — routing required"],
+        analyze: ["Customer VIP status detected", "Amount $48,000 within retry limits", "Escalation to Tier 2 support recommended"],
+        route: ["Excluded primary acquirer", "Alternate Acquirer 1 selected for secondary attempt", "BIN manipulation enabled"],
+        sla: ["No fixed SLA, internal VIP target 5m", "Protocol: aggressive retry active"],
+        load: ["Connection pool 2 allocated", "Acquirer API responsive (90ms ping)"],
+        execute: ["Retry attempt #1... failed", "Retry attempt #2... failed", "Retry attempt #3 dispatched at 10:14:22 UTC"],
+        audit: ["Failed attempts logged to audit trail", "Awaiting final confirmation"]
+      }
     }
   },
   {
@@ -139,6 +158,15 @@ export const PREBUILT_SCENARIOS: Scenario[] = [
       timeSaved: 180,
       effortReduced: 99,
       slaAvoided: 1,
+      reasoning: {
+        detect: ["SWIFT MT199 message received", "Counterparty status: UNRESPONSIVE > 45m", "Confidence 99.9% — intervention required"],
+        analyze: ["Exposure risk: $1.2M unhedged", "Market close in 1h 55m", "Severity: CRITICAL"],
+        route: ["Queried dark pools for €1.1M liquidity", "Provider C offered best rate (+1.2bps)", "Slippage accepted due to time constraint"],
+        sla: ["Target finality: 60m", "Cutoff: 16:00 EST", "Trajectory: On track"],
+        load: ["Internal treasury reserve queried: OK", "Margin requirements met"],
+        execute: ["FX swap executed", "Target settlement confirmed at 14:05 UTC", "Net latency 840ms"],
+        audit: ["Variance logged to financial controller", "SWIFT MT202 generated and stored"]
+      }
     }
   },
   {
@@ -170,6 +198,15 @@ export const PREBUILT_SCENARIOS: Scenario[] = [
       timeSaved: 40,
       effortReduced: 100,
       slaAvoided: 0,
+      reasoning: {
+        detect: ["Ethereum mempool analysis: Tx pending 16m 12s", "Target bridge RPC: 503 Unavailable", "Confidence 94% — bridge failure"],
+        analyze: ["Asset: native USDC", "Alternative routing available (Circle CCTP)", "Impact: low risk, high delay"],
+        route: ["Native CCTP selected over wrapped asset bridges", "Cost: 45 gwei (Ethereum) + 0.1 MATIC (Polygon)"],
+        sla: ["RTO: 15m", "Projected completion: <2m via CCTP"],
+        load: ["Ethereum gas price stable", "Polygon RPC nodes responsive"],
+        execute: ["Burn tx 0x4f8... confirmed on ETH", "Attestation fetched from Circle API", "Mint tx dispatched to Polygon"],
+        audit: ["Cross-chain state verified", "Proof hash recorded to internal ledger"]
+      }
     }
   }
 ];
@@ -198,6 +235,15 @@ export const FALLBACK_SCENARIO: Omit<PipelineResult, "id" | "timestamp" | "scena
   timeSaved: 5,
   effortReduced: 50,
   slaAvoided: 0,
+  reasoning: {
+    detect: ["Anomaly detected in custom payment stream", "Pattern matching applied", "Confidence 85%"],
+    analyze: ["Dynamic threshold analysis applied", "Risk assessment: Nominal"],
+    route: ["Generic auto-fallback route identified", "Capacity verified"],
+    sla: ["SLA constraints verified", "Within operational limits"],
+    load: ["Node congestion minimal", "Liquidity check bypassed"],
+    execute: ["Fallback execution triggered", "Response received in 350ms"],
+    audit: ["Generic execution logged"]
+  }
 };
 
 export const getResultForInput = (input: string): Omit<PipelineResult, "id" | "timestamp"> => {
@@ -206,7 +252,6 @@ export const getResultForInput = (input: string): Omit<PipelineResult, "id" | "t
     return { ...matched.result };
   }
   
-  // Try to parse amount from string roughly
   const amountMatch = input.match(/\$?\s*([\d,]+(?:\.\d+)?)/);
   const amountStr = amountMatch ? amountMatch[1].replace(/,/g, '') : "10000";
   const amount = parseFloat(amountStr) || 10000;
