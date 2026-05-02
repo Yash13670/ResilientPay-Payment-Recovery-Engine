@@ -252,8 +252,10 @@ export const getResultForInput = (input: string): Omit<PipelineResult, "id" | "t
     return { ...matched.result };
   }
   
-  const amountMatch = input.match(/\$?\s*([\d,]+(?:\.\d+)?)/);
-  const amountStr = amountMatch ? amountMatch[1].replace(/,/g, '') : "10000";
+  // Prefer explicit "Amount: $X" or "amount $X" labels; fall back to any dollar-sign number
+  const labeledMatch = input.match(/amount[:\s]+\$?\s*([\d,]+(?:\.\d+)?)/i)
+    ?? input.match(/\$\s*([\d,]+(?:\.\d+)?)/);
+  const amountStr = labeledMatch ? labeledMatch[1].replace(/,/g, '') : "10000";
   const amount = parseFloat(amountStr) || 10000;
 
   const isCritical = input.toLowerCase().includes("critical") || input.toLowerCase().includes("sla");
