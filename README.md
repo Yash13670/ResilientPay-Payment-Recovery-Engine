@@ -1,6 +1,6 @@
 # ResilientPay
 
-**Autonomous Payment Recovery System — AI-powered fintech demo**
+**Autonomous Payment Recovery System — AI-powered fintech Engine**
 
 ResilientPay is a full-stack demo application that simulates an AI agent autonomously recovering failed payment transactions. It classifies failure types, selects optimal fallback routes, generates step-by-step reasoning traces using Google Gemini, and produces a full audit log — all within a 7-step animated pipeline.
 
